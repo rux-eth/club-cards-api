@@ -144,7 +144,13 @@ router.get(
       const coll = client.db("club-cards").collection(collection);
       let data = await coll.findOne({ waveId: waveId });
       if (data.reIndexed !== true) {
-        res.json(hiddenMetadata);
+        res.json({
+          image:
+            "https://gateway.pinata.cloud/ipfs/QmSrozmfM7BeQVCzpgnHK71SFehgUZoS2Pb3jTYDbPkRoQ",
+          description:
+            "Thank you for participating in the public sale! Wen reveal? Soon! CC 👊",
+          name: `Club Cards: MetaSharks #${tokenId}`,
+        });
       } else {
         res.json(data.metadata[tokenId]);
       }
