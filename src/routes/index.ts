@@ -39,6 +39,7 @@ const checkSupply = async () => {
   data = await coll.findOne({ waveId: 3 });
   currentSupply = (await contract.totalSupply()).toNumber();
   console.log(currentSupply);
+  await client.close();
 };
 const interval = setInterval(checkSupply, 5000);
 
