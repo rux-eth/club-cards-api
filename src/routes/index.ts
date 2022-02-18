@@ -31,11 +31,16 @@ const hiddenMetadata = {
   name: "Club Cards: MetaSharks #2",
 };
 let currentSupply: number;
+let data: any;
 const checkSupply = async () => {
+  const client = new MongoClient(process.env.MONGODB_URL);
+  await client.connect();
+  const coll = client.db("club-cards").collection(collection);
+  let data = await coll.findOne({ waveId: 3 });
   currentSupply = (await contract.totalSupply()).toNumber();
   console.log(currentSupply);
 };
-const interval = setInterval(checkSupply, 10000);
+const interval = setInterval(checkSupply, 300000);
 
 // Contract event handlers
 contract.on(
@@ -139,10 +144,6 @@ router.get(
 
       next({ message: "Invalid Query", status: 404 });
     } else {
-      const client = new MongoClient(process.env.MONGODB_URL);
-      await client.connect();
-      const coll = client.db("club-cards").collection(collection);
-      let data = await coll.findOne({ waveId: waveId });
       if (data.reIndexed !== true) {
         res.json({
           image:
