@@ -36,11 +36,11 @@ const checkSupply = async () => {
   const client = new MongoClient(process.env.MONGODB_URL);
   await client.connect();
   const coll = client.db("club-cards").collection(collection);
-  let data = await coll.findOne({ waveId: 3 });
+  data = await coll.findOne({ waveId: 3 });
   currentSupply = (await contract.totalSupply()).toNumber();
   console.log(currentSupply);
 };
-const interval = setInterval(checkSupply, 300000);
+const interval = setInterval(checkSupply, 5000);
 
 // Contract event handlers
 contract.on(
@@ -139,9 +139,6 @@ router.get(
     let waveId = parseInt(req.params.waveId);
     let tokenId = parseInt(req.params.tokenId);
     if (waveId !== 3 || tokenId < 0 || tokenId >= currentSupply) {
-      console.log(waveId);
-      console.log(tokenId);
-
       next({ message: "Invalid Query", status: 404 });
     } else {
       if (data.reIndexed !== true) {

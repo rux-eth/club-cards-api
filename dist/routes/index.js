@@ -22,11 +22,16 @@ const hiddenMetadata = {
     name: "Club Cards: MetaSharks #2",
 };
 let currentSupply;
+let data;
 const checkSupply = async () => {
+    const client = new mongodb_1.MongoClient(process.env.MONGODB_URL);
+    await client.connect();
+    const coll = client.db("club-cards").collection(collection);
+    data = await coll.findOne({ waveId: 3 });
     currentSupply = (await contract.totalSupply()).toNumber();
     console.log(currentSupply);
 };
-const interval = setInterval(checkSupply, 10000);
+const interval = setInterval(checkSupply, 5000);
 // Contract event handlers
 contract.on("WaveStartIndexBlockSet", async (waveId, SIB) => {
     try {
@@ -116,15 +121,9 @@ router.get("/waves/:waveId/:tokenId", (0, asyncHandler_1.default)(async (req, re
     let waveId = parseInt(req.params.waveId);
     let tokenId = parseInt(req.params.tokenId);
     if (waveId !== 3 || tokenId < 0 || tokenId >= currentSupply) {
-        console.log(waveId);
-        console.log(tokenId);
         next({ message: "Invalid Query", status: 404 });
     }
     else {
-        const client = new mongodb_1.MongoClient(process.env.MONGODB_URL);
-        await client.connect();
-        const coll = client.db("club-cards").collection(collection);
-        let data = await coll.findOne({ waveId: waveId });
         if (data.reIndexed !== true) {
             res.json({
                 image: "https://gateway.pinata.cloud/ipfs/QmSrozmfM7BeQVCzpgnHK71SFehgUZoS2Pb3jTYDbPkRoQ",
