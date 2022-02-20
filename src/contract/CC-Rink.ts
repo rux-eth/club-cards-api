@@ -1,5 +1,5 @@
 const data = {
-  address: "0x1c6A00B53c234dBAB6136F19b1A966E8695863a6",
+  address: "0x8C6ba1Be91F8c2122e350c6938F8689156a123f2",
   abi: [
     {
       inputs: [{ internalType: "address", name: "_dev", type: "address" }],

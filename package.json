@@ -9,6 +9,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@types/express-serve-static-core": "^4.17.28",
     "body-parser": "^1.19.2",
     "debug": "~2.6.9",
     "dotenv": "^16.0.0",
