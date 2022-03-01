@@ -1,24 +1,28 @@
-import * as createError from "http-errors";
-import * as express from "express";
-import indexRouter from "./routes/index";
+/* eslint-disable no-unused-vars */
+/* eslint-disable import/no-unresolved */
+/* eslint-disable import/extensions */
+import * as express from 'express';
+import * as createError from 'http-errors';
+import indexRouter from './routes/index';
 
 const app = express();
 
-app.use("/", indexRouter);
-app.use("/claims", indexRouter);
+app.use('/', indexRouter);
+app.use('/claims', indexRouter);
+app.use('/signature', indexRouter);
+
 // app.use("/waves/:waveId/:tokenId", indexRouter);
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  console.log("here");
-  next(createError(404));
+app.use((req, res, next) => {
+    next(createError(404));
 });
 
 // error handler
-app.use(function (err, req, res, next) {
-  // render the error page
-  res.status(err.status || 500);
-  res.send(err.message);
+app.use((err, req, res, next) => {
+    // render the error page
+    res.status(err.status || 500);
+    res.send(err.message);
 });
 
 const port = process.env.PORT || 3000;

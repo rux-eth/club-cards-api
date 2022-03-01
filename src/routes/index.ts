@@ -1,102 +1,33 @@
-import { BigNumber, Contract, Signer, Wallet, ethers, providers } from "ethers";
-import { arrayify } from "ethers/lib/utils";
-import { createHash, randomInt, Sign } from "crypto";
-import * as express from "express";
-import * as dotenv from "dotenv";
-import { conAddress, conABI, network } from "../contract/ClubCards";
-import asyncHandler from "../asyncHandler";
-import { MongoClient } from "mongodb";
-import e = require("express");
+/* eslint-disable prettier/prettier */
+/* eslint-disable no-throw-literal */
+/* eslint-disable import/extensions */
+/* eslint-disable import/no-unresolved */
+/* eslint-disable import/no-extraneous-dependencies */
+import * as dotenv from 'dotenv';
+import * as express from 'express';
+import contracts from '../contract/ClubCards';
+import asyncHandler from '../util/asyncHandler';
+import mongoClient, { DBClient } from '../util/db/database';
+import createSig from '../util/sigs';
+import {
+  assertSigReq,
+  ClaimId,
+  ClaimSigParams,
+  ExpressError,
+  GetClaimsRes,
+  SigReq,
+  SigRes,
+  SigResponse
+} from '../util/types';
 
 dotenv.config();
 const router = express.Router();
-const collClaims =
-  process.env.NODE_ENV === "production" ? "claims" : "claims-test";
-const node = new ethers.providers.InfuraProvider(
-  network,
-  process.env.INFURA_ID
+const client: DBClient = mongoClient(
+    'club-cards',
+    process.env.NODE_ENV === 'production' ? 'auth-funcs' : 'auth-funcs-test'
 );
-const contract = new ethers.Contract(conAddress, conABI, node);
-function createMintSig(
-  sender: string,
-  numMints: number,
-  waveId: number,
-  nonce: number,
-  signer: Signer,
-  signerAddy: string
-) {
-  let ts = Math.round(Date.now() / 1000);
-  const message = ethers.utils.defaultAbiCoder.encode(
-    ["address", "uint256", "uint256", "uint256", "uint256"],
-    [sender, numMints, waveId, nonce, ts]
-  );
-  let hashed = ethers.utils.keccak256(message);
-  return signer
-    .signMessage(arrayify(hashed))
-    .then((sig) => {
-      let recAddress = ethers.utils.recoverAddress(
-        arrayify(ethers.utils.hashMessage(arrayify(hashed))),
-        sig
-      );
-      if (recAddress == signerAddy.toString()) {
-        return {
-          sender: sender,
-          numMints: numMints,
-          waveId: waveId,
-          nonce: nonce,
-          timestamp: ts,
-          signature: sig,
-        };
-      } else {
-        throw new Error("COULDNT RECOVER ADDRESS FROM SIGNATURE");
-      }
-    })
-    .catch((err) => {
-      return err;
-    });
-}
 
-// create signed message
-function createClaimSig(
-  sender: string,
-  ids: Array<number>,
-  amts: Array<number>,
-  claimNonce: number
-) {
-  let signer = new ethers.Wallet(process.env.PRIVATE_KEY_ADMIN);
-  let ts = Math.round(Date.now() / 1000);
-  const message = ethers.utils.defaultAbiCoder.encode(
-    ["address", "uint256[]", "uint256[]", "uint256", "uint256"],
-    [sender, ids, amts, claimNonce, ts]
-  );
-  let hashed = ethers.utils.keccak256(message);
-  return signer
-    .signMessage(arrayify(hashed))
-    .then((sig) => {
-      let recAddress = ethers.utils.recoverAddress(
-        arrayify(ethers.utils.hashMessage(arrayify(hashed))),
-        sig
-      );
-      if (recAddress == signer.address) {
-        return {
-          tokenIds: ids,
-          amounts: amts,
-          nonce: claimNonce,
-          timestamp: ts,
-          signature: sig,
-        };
-      } else {
-        throw new Error("COULDNT RECOVER ADDRESS FROM SIGNATURE");
-      }
-    })
-    .catch((err) => {
-      return err;
-    });
-}
-function filterNums(arr: Array<any>): Array<number> {
-  return arr.filter((val) => !isNaN(val)).map((elem) => parseInt(elem));
-}
-/*
+/**
  * Endpoint for claims. Query params:
  *
  * address(REQUIRED)
@@ -109,37 +40,77 @@ function filterNums(arr: Array<any>): Array<number> {
  *
  */
 router.get(
-  "/claims",
-  asyncHandler(async (req, res, next) => {
-    async function getClaims(addy: string) {
-      const client = new MongoClient(process.env.MONGODB_URL);
-      await client.connect();
-      const coll = client.db("club-cards").collection(collClaims);
-      let data = await coll.findOne({ address: addy });
-      await client.close();
-      return data;
-    }
-    let address: string =
-      typeof req.query.address === "string" ? req.query.address : null;
-    let claimIds: Array<number> = Array.isArray(req.query.claimIds)
-      ? filterNums(req.query.claimIds)
-      : null;
-    if (ethers.utils.isAddress(address)) {
-      let data = await getClaims(address);
-      if (data !== null) {
-        let claimMap = new Map();
-        data.claims.forEach((elem) => {
-          claimMap.set(elem.claimId, elem);
-        });
-      } else {
-        res.status(404).send(`No Claims for Address: ${address}`);
-      }
+    '/claims',
+    // eslint-disable-next-line no-unused-vars
+    asyncHandler(async (req, res, next) => {
+        /*     let query =
+      process.env.NODE_ENV === "production"
+        ? req.query
+        : JSON.parse(<string>req.query.query);
+    let params: ClaimReq = <ClaimReq>query;
+    let address: string = <string>params.address;
+
+    if (!address || !address.startsWith("0x") || address.length !== 42) {
+      res.status(400).send("Invalid Address");
     } else {
-      res.status(400).send(`Invalid Address: ${address}`);
-    }
-  })
+      let claimRes: ClaimDBResponse = await getClaims(address);
+      if (claimRes.canClaim) {
+        let claimDoc: ClaimDoc = claimRes.claimDoc;
+        if (params.claimIds) {
+        } else {
+        }
+      } else {
+        res.status(444).send(`No Claims for Address: ${address}`);
+      }
+    } */
+    })
 );
-/* 
+router.get(
+    '/signature',
+    // eslint-disable-next-line no-unused-vars
+    asyncHandler(async (req, res, next) => {
+        const params: any | SigReq =
+            process.env.NODE_ENV === 'production' ? req.query : JSON.parse(<string>req.query.query);
+        assertSigReq(params);
+        params.claimIds.filter((val: ClaimId, index) => params.claimIds.indexOf(val) === index);
+        const claimRes: GetClaimsRes = await client.getClaims(params.address);
+        const claimKeys: number[] = Array.from(claimRes.claimMap.keys());
+        if (!params.claimIds.every((id: ClaimId) => claimKeys.includes(id))) {
+            throw <ExpressError>{
+                status: 403,
+                message: 'Requested a claimId that the address is not authorized to access',
+            };
+        }
+        const ids: number[] = params.claimIds.map(
+            (id: ClaimId) => claimRes.claimMap.get(id).tokenId
+        );
+        const amts: number[] = params.claimIds.map(
+            (id: ClaimId) => claimRes.claimMap.get(id).amount
+        );
+        const sigParams: ClaimSigParams = {
+            tokenIds: ids,
+            amounts: amts,
+        };
+        const sigRes: SigResponse = <SigResponse>(
+            await createSig(
+                params.address,
+                sigParams,
+                claimRes.nonce,
+                contracts.CCAuthTx.signer,
+                contracts.CCAuthTx.address
+            )
+        );
+        res.status(200).json(<SigRes>{
+            tokenIds: ids,
+            amounts: amts,
+            nonce: claimRes.nonce,
+            timestamp: sigRes.timestamp,
+            sig1: sigRes.signature1,
+            sig2: sigRes.signature2,
+        });
+    })
+);
+/*
 let currentSupply: number;
 const checkSupply = async () => {
   currentSupply = (await contract.totalSupply()).toNumber();
@@ -147,7 +118,7 @@ const checkSupply = async () => {
 
 setInterval(checkSupply, 5000);
  */
-/* 
+/*
 // Contract event handlers
 contract.on(
   "WaveStartIndexBlockSet",
@@ -169,7 +140,7 @@ contract.on(
   }
 );
  */
-/* 
+/*
 // functions
 async function reIndexMeta(waveId: number, startIndex: number) {
   try {
@@ -241,7 +212,7 @@ function hash(string) {
 }
  */
 // API endpoints
-/* 
+/*
 router.get(
   "/waves/:waveId/:tokenId",
   asyncHandler(async (req, res, next) => {

@@ -1,74 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const ethers_1 = require("ethers");
-const utils_1 = require("ethers/lib/utils");
-const express = require("express");
+/* eslint-disable prettier/prettier */
+/* eslint-disable no-throw-literal */
+/* eslint-disable import/extensions */
+/* eslint-disable import/no-unresolved */
+/* eslint-disable import/no-extraneous-dependencies */
 const dotenv = require("dotenv");
+const express = require("express");
 const ClubCards_1 = require("../contract/ClubCards");
-const asyncHandler_1 = require("../asyncHandler");
-const mongodb_1 = require("mongodb");
+const asyncHandler_1 = require("../util/asyncHandler");
+const database_1 = require("../util/db/database");
+const sigs_1 = require("../util/sigs");
+const types_1 = require("../util/types");
 dotenv.config();
 const router = express.Router();
-const collClaims = process.env.NODE_ENV === "production" ? "claims" : "claims-test";
-const node = new ethers_1.ethers.providers.InfuraProvider(ClubCards_1.network, process.env.INFURA_ID);
-const contract = new ethers_1.ethers.Contract(ClubCards_1.conAddress, ClubCards_1.conABI, node);
-function createMintSig(sender, numMints, waveId, nonce, signer, signerAddy) {
-    let ts = Math.round(Date.now() / 1000);
-    const message = ethers_1.ethers.utils.defaultAbiCoder.encode(["address", "uint256", "uint256", "uint256", "uint256"], [sender, numMints, waveId, nonce, ts]);
-    let hashed = ethers_1.ethers.utils.keccak256(message);
-    return signer
-        .signMessage((0, utils_1.arrayify)(hashed))
-        .then((sig) => {
-        let recAddress = ethers_1.ethers.utils.recoverAddress((0, utils_1.arrayify)(ethers_1.ethers.utils.hashMessage((0, utils_1.arrayify)(hashed))), sig);
-        if (recAddress == signerAddy.toString()) {
-            return {
-                sender: sender,
-                numMints: numMints,
-                waveId: waveId,
-                nonce: nonce,
-                timestamp: ts,
-                signature: sig,
-            };
-        }
-        else {
-            throw new Error("COULDNT RECOVER ADDRESS FROM SIGNATURE");
-        }
-    })
-        .catch((err) => {
-        return err;
-    });
-}
-// create signed message
-function createClaimSig(ids, amts, claims, sender, signer, signerAddy, callback) {
-    let ts = Math.round(Date.now() / 1000);
-    const message = ethers_1.ethers.utils.defaultAbiCoder.encode(["address", "uint256[]", "uint256[]", "uint256", "uint256"], [sender, ids, amts, claims, ts]);
-    let hashed = ethers_1.ethers.utils.keccak256(message);
-    return signer
-        .signMessage((0, utils_1.arrayify)(hashed))
-        .then((sig) => {
-        let recAddress = ethers_1.ethers.utils.recoverAddress((0, utils_1.arrayify)(ethers_1.ethers.utils.hashMessage((0, utils_1.arrayify)(hashed))), sig);
-        if (recAddress == signerAddy.toString()) {
-            callback({
-                tokens: ids,
-                amounts: amts,
-                claimNum: claims,
-                signature: sig,
-                recAddy: recAddress,
-                timestamp: ts,
-            });
-        }
-        else {
-            throw new Error("COULDNT RECOVER ADDRESS FROM SIGNATURE");
-        }
-    })
-        .catch((err) => {
-        return err;
-    });
-}
-function filterNums(arr) {
-    return arr.filter((val) => !isNaN(val)).map((elem) => parseInt(elem));
-}
-/*
+const client = (0, database_1.default)('club-cards', process.env.NODE_ENV === 'production' ? 'auth-funcs' : 'auth-funcs-test');
+/**
  * Endpoint for claims. Query params:
  *
  * address(REQUIRED)
@@ -80,32 +27,59 @@ function filterNums(arr) {
  * will respond with all parameters required by the contract to claim including the signature.
  *
  */
-router.get("/claims", (0, asyncHandler_1.default)(async (req, res, next) => {
-    async function getClaims(addy) {
-        const client = new mongodb_1.MongoClient(process.env.MONGODB_URL);
-        await client.connect();
-        const coll = client.db("club-cards").collection(collClaims);
-        let data = await coll.findOne({ address: addy });
-        await client.close();
-        return data;
+router.get('/claims', 
+// eslint-disable-next-line no-unused-vars
+(0, asyncHandler_1.default)(async (req, res, next) => {
+    /*     let query =
+  process.env.NODE_ENV === "production"
+    ? req.query
+    : JSON.parse(<string>req.query.query);
+let params: ClaimReq = <ClaimReq>query;
+let address: string = <string>params.address;
+
+if (!address || !address.startsWith("0x") || address.length !== 42) {
+  res.status(400).send("Invalid Address");
+} else {
+  let claimRes: ClaimDBResponse = await getClaims(address);
+  if (claimRes.canClaim) {
+    let claimDoc: ClaimDoc = claimRes.claimDoc;
+    if (params.claimIds) {
+    } else {
     }
-    let address = typeof req.query.address === "string" ? req.query.address : null;
-    let claimIds = Array.isArray(req.query.claimIds)
-        ? filterNums(req.query.claimIds)
-        : null;
-    if (ethers_1.ethers.utils.isAddress(address)) {
-        let data = await getClaims(address);
-        if (data !== null) {
-        }
-        else {
-            let claimMap = new Map();
-            console.log(claimMap.get(1));
-            res.status(404).send(`No Claims for Address: ${address}`);
-        }
+  } else {
+    res.status(444).send(`No Claims for Address: ${address}`);
+  }
+} */
+}));
+router.get('/signature', 
+// eslint-disable-next-line no-unused-vars
+(0, asyncHandler_1.default)(async (req, res, next) => {
+    const params = process.env.NODE_ENV === 'production' ? req.query : JSON.parse(req.query.query);
+    (0, types_1.assertSigReq)(params);
+    params.claimIds.filter((val, index) => params.claimIds.indexOf(val) === index);
+    const claimRes = await client.getClaims(params.address);
+    const claimKeys = Array.from(claimRes.claimMap.keys());
+    if (!params.claimIds.every((id) => claimKeys.includes(id))) {
+        throw {
+            status: 403,
+            message: 'Requested a claimId that the address is not authorized to access',
+        };
     }
-    else {
-        res.status(400).send(`Invalid Address: ${address}`);
-    }
+    const ids = params.claimIds.map((id) => claimRes.claimMap.get(id).tokenId);
+    const amts = params.claimIds.map((id) => claimRes.claimMap.get(id).amount);
+    const sigParams = {
+        tokenIds: ids,
+        amounts: amts,
+    };
+    const sigRes = (await (0, sigs_1.default)(params.address, sigParams, claimRes.nonce, ClubCards_1.default.CCAuthTx.signer, ClubCards_1.default.CCAuthTx.address));
+    res.status(200).json({
+        tokenIds: ids,
+        amounts: amts,
+        nonce: claimRes.nonce,
+        timestamp: sigRes.timestamp,
+        sig1: sigRes.signature1,
+        sig2: sigRes.signature2,
+    });
 }));
 /*
 let currentSupply: number;

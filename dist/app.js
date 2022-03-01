@@ -1,19 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const createError = require("http-errors");
+/* eslint-disable no-unused-vars */
+/* eslint-disable import/no-unresolved */
+/* eslint-disable import/extensions */
 const express = require("express");
+const createError = require("http-errors");
 const index_1 = require("./routes/index");
 const app = express();
-app.use("/", index_1.default);
-app.use("/claims", index_1.default);
+app.use('/', index_1.default);
+app.use('/claims', index_1.default);
+app.use('/signature', index_1.default);
 // app.use("/waves/:waveId/:tokenId", indexRouter);
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
-    console.log("here");
+app.use((req, res, next) => {
     next(createError(404));
 });
 // error handler
-app.use(function (err, req, res, next) {
+app.use((err, req, res, next) => {
     // render the error page
     res.status(err.status || 500);
     res.send(err.message);

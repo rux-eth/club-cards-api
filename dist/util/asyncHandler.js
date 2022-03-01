@@ -5,8 +5,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @param handler Async express request handler/middleware potentially throwing errors
  * @returns Async express request handler with error handling
  */
-exports.default = (handler) => {
-    return (req, res, next) => {
-        return handler(req, res, next).catch(next);
-    };
-};
+exports.default = (handler) => (req, res, next) => handler(req, res, next).catch(next);
