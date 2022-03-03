@@ -34,32 +34,7 @@ const client: DBClient = mongoClient(
  * claimIds and information that an address qualifies for.
  *
  */
-router.get(
-    '/claims',
-    // eslint-disable-next-line no-unused-vars
-    asyncHandler(async (req, res, next) => {
-        /*     let query =
-      process.env.NODE_ENV === "production"
-        ? req.query
-        : JSON.parse(<string>req.query.query);
-    let params: ClaimReq = <ClaimReq>query;
-    let address: string = <string>params.address;
 
-    if (!address || !address.startsWith("0x") || address.length !== 42) {
-      res.status(400).send("Invalid Address");
-    } else {
-      let claimRes: ClaimDBResponse = await getClaims(address);
-      if (claimRes.canClaim) {
-        let claimDoc: ClaimDoc = claimRes.claimDoc;
-        if (params.claimIds) {
-        } else {
-        }
-      } else {
-        res.status(444).send(`No Claims for Address: ${address}`);
-      }
-    } */
-    })
-);
 router.post(
     '/signature', jsonParser,
     asyncHandler(async (req, res) => {
