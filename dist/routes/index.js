@@ -5,26 +5,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/no-extraneous-dependencies */
-// import * as bodyParser from 'body-parser';
+const bodyParser = require("body-parser");
 const express = require("express");
 const ClubCards_1 = require("../contract/ClubCards");
 const asyncHandler_1 = require("../util/asyncHandler");
 const database_1 = require("../util/db/database");
 const sigs_1 = require("../util/sigs");
 const types_1 = require("../util/types");
-// const jsonParser = bodyParser.json();
+const jsonParser = bodyParser.json();
 const router = express.Router();
 const client = (0, database_1.default)('club-cards', process.env.NODE_ENV === 'production' ? 'auth-funcs' : 'auth-funcs-test');
 /**
- * Endpoint for claims. Query params:
+ * query params:
+ * address
  *
- * address(REQUIRED)
- * claimIds(OPTIONAL)
- *
- * If claimIds are not provided, the API will respond with the claimIds the address
- * qualifies for along with the amounts.
- * If claimIds are provided and the address qualifies for each claimId, the API
- * will respond with all parameters required by the contract to claim including the signature.
+ * response:
+ * claimIds and information that an address qualifies for.
  *
  */
 router.get('/claims', 
@@ -51,8 +47,8 @@ if (!address || !address.startsWith("0x") || address.length !== 42) {
   }
 } */
 }));
-router.get('/signature', (0, asyncHandler_1.default)(async (req, res) => {
-    const params = process.env.NODE_ENV === 'production' ? req.query : JSON.parse(req.query.query);
+router.post('/signature', jsonParser, (0, asyncHandler_1.default)(async (req, res) => {
+    const params = req.body;
     (0, types_1.assertSigReq)(params);
     params.claimIds.filter((val, index) => params.claimIds.indexOf(val) === index);
     const claimRes = await client.getClaims(params.address);

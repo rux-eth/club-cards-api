@@ -20,7 +20,8 @@
     "http-errors": "~1.6.3",
     "mongodb": "^4.4.0",
     "nodemon": "^2.0.15",
-    "tsc-watch": "^4.6.0"
+    "tsc-watch": "^4.6.0",
+    "web3-utils": "^1.7.1"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",

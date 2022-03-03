@@ -3,7 +3,7 @@
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/no-extraneous-dependencies */
-// import * as bodyParser from 'body-parser';
+import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import contracts from '../contract/ClubCards';
 import asyncHandler from '../util/asyncHandler';
@@ -19,7 +19,7 @@ import {
 } from '../util/types';
 
 
-// const jsonParser = bodyParser.json();
+const jsonParser = bodyParser.json();
 const router = express.Router();
 const client: DBClient = mongoClient(
     'club-cards',
@@ -27,15 +27,11 @@ const client: DBClient = mongoClient(
 );
 
 /**
- * Endpoint for claims. Query params:
+ * query params:
+ * address
  *
- * address(REQUIRED)
- * claimIds(OPTIONAL)
- *
- * If claimIds are not provided, the API will respond with the claimIds the address
- * qualifies for along with the amounts.
- * If claimIds are provided and the address qualifies for each claimId, the API
- * will respond with all parameters required by the contract to claim including the signature.
+ * response:
+ * claimIds and information that an address qualifies for.
  *
  */
 router.get(
@@ -64,11 +60,10 @@ router.get(
     } */
     })
 );
-router.get(
-    '/signature',
+router.post(
+    '/signature', jsonParser,
     asyncHandler(async (req, res) => {
-        const params: any | SigReq =
-            process.env.NODE_ENV === 'production' ? req.query : JSON.parse(<string>req.query.query);
+        const params: any | SigReq = req.body
         assertSigReq(params);
         params.claimIds.filter((val: ClaimId, index) => params.claimIds.indexOf(val) === index);
         const claimRes: GetClaimsRes = await client.getClaims(params.address);

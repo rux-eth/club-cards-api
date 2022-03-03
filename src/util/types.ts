@@ -2,6 +2,7 @@
 /* eslint-disable import/extensions */
 /* eslint-disable no-throw-literal */
 import { ObjectId } from 'mongodb';
+import { toChecksumAddress } from 'web3-utils';
 import { recPostSig } from './sigs';
 
 // types
@@ -89,7 +90,10 @@ export function assertClaimIds(arr: any): asserts arr is ClaimIds {
     throw <ExpressError>{ status: 400, message: 'Invalid claimIds' };
 }
 export function assertCompressedAddress(a: any): asserts a is CompressedAddress {
-    if (typeof a === typeof 'string' && a.startsWith('0x') && a.length === 42) return;
+    if (typeof a === typeof 'string' && a.startsWith('0x') && a.length === 42) {
+        toChecksumAddress(a);
+        return;
+    }
     throw <ExpressError>{ status: 400, message: 'Invalid address' };
 }
 

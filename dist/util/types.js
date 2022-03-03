@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getEditionId = exports.assertAuthReq = exports.assertSigReq = exports.assertClaimReq = exports.assertAuthFuncDoc = exports.assertCompressedAddress = exports.assertClaimIds = exports.assertSignature = exports.assertClaim = exports.assertWhitelist = void 0;
+const web3_utils_1 = require("web3-utils");
 const sigs_1 = require("./sigs");
 function assertWhitelist(o) {
     if ('waveId' in o && 'amount' in o)
@@ -30,8 +31,10 @@ function assertClaimIds(arr) {
 }
 exports.assertClaimIds = assertClaimIds;
 function assertCompressedAddress(a) {
-    if (typeof a === typeof 'string' && a.startsWith('0x') && a.length === 42)
+    if (typeof a === typeof 'string' && a.startsWith('0x') && a.length === 42) {
+        (0, web3_utils_1.toChecksumAddress)(a);
         return;
+    }
     throw { status: 400, message: 'Invalid address' };
 }
 exports.assertCompressedAddress = assertCompressedAddress;

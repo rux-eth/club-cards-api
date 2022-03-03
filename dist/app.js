@@ -23,7 +23,9 @@ app.use((req, res, next) => {
 // error handler
 app.use((err, req, res, next) => {
     // render the error page
-    res.status(err.status || 500);
-    res.send(err.message);
+    console.log(err);
+    res.status(err.status || 500).send(err.message || err);
 });
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
 exports.default = app;
