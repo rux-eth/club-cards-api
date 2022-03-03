@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.recPostSig = void 0;
+/* eslint-disable prettier/prettier */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/extensions */
 const ethers_1 = require("ethers");
@@ -53,3 +55,11 @@ function createSig(senderAddy, params, nonce, signer, contractAddress, timestamp
     });
 }
 exports.default = createSig;
+function recPostSig(auth) {
+    const nonce = ethers_1.BigNumber.from(auth.content.postNonce);
+    const newAuth = JSON.stringify(auth.content);
+    const message = ethers_1.ethers.utils.defaultAbiCoder.encode(['uint256', 'string'], [nonce, newAuth]);
+    const hashed = ethers_1.ethers.utils.keccak256(message);
+    return ethers_1.ethers.utils.recoverAddress((0, utils_1.arrayify)(ethers_1.ethers.utils.hashMessage((0, utils_1.arrayify)(hashed))), auth.signature);
+}
+exports.recPostSig = recPostSig;

@@ -1,15 +1,18 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/extensions */
+import * as dotenv from 'dotenv';
 import * as express from 'express';
 import * as createError from 'http-errors';
 import indexRouter from './routes/index';
 
+dotenv.config();
 const app = express();
 
 app.use('/', indexRouter);
-app.use('/claims', indexRouter);
+// app.use('/claims', indexRouter);
 app.use('/signature', indexRouter);
+// app.use('/authFuncs', indexRouter);
 
 // app.use("/waves/:waveId/:tokenId", indexRouter);
 

@@ -5,14 +5,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/no-extraneous-dependencies */
-const dotenv = require("dotenv");
+// import * as bodyParser from 'body-parser';
 const express = require("express");
 const ClubCards_1 = require("../contract/ClubCards");
 const asyncHandler_1 = require("../util/asyncHandler");
 const database_1 = require("../util/db/database");
 const sigs_1 = require("../util/sigs");
 const types_1 = require("../util/types");
-dotenv.config();
+// const jsonParser = bodyParser.json();
 const router = express.Router();
 const client = (0, database_1.default)('club-cards', process.env.NODE_ENV === 'production' ? 'auth-funcs' : 'auth-funcs-test');
 /**
@@ -51,9 +51,7 @@ if (!address || !address.startsWith("0x") || address.length !== 42) {
   }
 } */
 }));
-router.get('/signature', 
-// eslint-disable-next-line no-unused-vars
-(0, asyncHandler_1.default)(async (req, res, next) => {
+router.get('/signature', (0, asyncHandler_1.default)(async (req, res) => {
     const params = process.env.NODE_ENV === 'production' ? req.query : JSON.parse(req.query.query);
     (0, types_1.assertSigReq)(params);
     params.claimIds.filter((val, index) => params.claimIds.indexOf(val) === index);
@@ -81,6 +79,14 @@ router.get('/signature',
         sig2: sigRes.signature2,
     });
 }));
+/*
+router.post('/auth', jsonParser, asyncHandler(async (req, res) => {
+  const {body} = req;
+  assertAuthReq(body);
+  const result = await client.postNewAuths(body);
+  res.status(200).send(result);
+}))
+ */
 /*
 let currentSupply: number;
 const checkSupply = async () => {

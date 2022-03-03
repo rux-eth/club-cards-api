@@ -5,11 +5,18 @@ async function getClaims(address, coll) {
     const cm = new Map();
     // eslint-disable-next-line object-shorthand
     const authFuncDoc = await coll.findOne({ address: address });
-    (0, types_1.assertAuthFuncDoc)(authFuncDoc);
-    if (!(authFuncDoc.authTxs.claims.length > 0)) {
+    if (!authFuncDoc) {
         throw { status: 444, message: 'No authorized functions for address' };
     }
-    authFuncDoc.authTxs.claims.forEach((elem) => {
+    (0, types_1.assertAuthFuncDoc)(authFuncDoc);
+    if (!(authFuncDoc.authFuncs.claims.length > 0)) {
+        throw { status: 444, message: 'No authorized functions for address' };
+    }
+    if (!authFuncDoc.nonce) {
+        throw new Error('No nonce recovered from DB for address');
+    }
+    authFuncDoc.authFuncs.claims.forEach((elem) => {
+        (0, types_1.assertClaim)(elem);
         cm.set(elem.claimId, elem);
     });
     return { claimMap: cm, nonce: authFuncDoc.nonce };

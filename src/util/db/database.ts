@@ -2,12 +2,15 @@
 /* eslint-disable import/extensions */
 /* eslint-disable no-throw-literal */
 import { MongoClient } from 'mongodb';
-import { ExpressError, GetClaimsRes } from '../types';
-import getClaims1 from './commands/getClaims';
+import { AuthReq, ExpressError, GetClaimsRes } from '../types';
+import getClaims from './commands/getClaims';
+import postNewAuths from './commands/postNewAuths';
 
 export interface DBClient {
     // eslint-disable-next-line no-unused-vars
     getClaims: (arg0: string) => Promise<GetClaimsRes>;
+    // eslint-disable-next-line no-unused-vars
+    postNewAuths: (arg0: AuthReq) => Promise<any>;
 }
 export default function mongoClient(
     db: string,
@@ -18,7 +21,20 @@ export default function mongoClient(
         getClaims: async (address: string): Promise<GetClaimsRes> => {
             try {
                 await c.connect();
-                return await getClaims1(address, c.db(db).collection(coll));
+                return await getClaims(address, c.db(db).collection(coll));
+            } catch (e) {
+                throw e.status === 444
+                    ? <ExpressError>{ status: e.status, message: e.message }
+                    : <ExpressError>{ status: 500, message: e.message || e };
+            } finally {
+                await c.close();
+            }
+        },
+        postNewAuths: async (newAuths: AuthReq): Promise<any> => {
+            try {
+                await c.connect();
+                const res = await postNewAuths(newAuths, c.db(db).collection(coll));
+                return res;
             } catch (e) {
                 throw e.status === 444
                     ? <ExpressError>{ status: e.status, message: e.message }

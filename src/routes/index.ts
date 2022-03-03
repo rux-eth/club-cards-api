@@ -3,24 +3,23 @@
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/no-extraneous-dependencies */
-import * as dotenv from 'dotenv';
+// import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import contracts from '../contract/ClubCards';
 import asyncHandler from '../util/asyncHandler';
 import mongoClient, { DBClient } from '../util/db/database';
 import createSig from '../util/sigs';
 import {
-  assertSigReq,
-  ClaimId,
+  assertSigReq, ClaimId,
   ClaimSigParams,
   ExpressError,
   GetClaimsRes,
   SigReq,
-  SigRes,
   SigResponse
 } from '../util/types';
 
-dotenv.config();
+
+// const jsonParser = bodyParser.json();
 const router = express.Router();
 const client: DBClient = mongoClient(
     'club-cards',
@@ -67,8 +66,7 @@ router.get(
 );
 router.get(
     '/signature',
-    // eslint-disable-next-line no-unused-vars
-    asyncHandler(async (req, res, next) => {
+    asyncHandler(async (req, res) => {
         const params: any | SigReq =
             process.env.NODE_ENV === 'production' ? req.query : JSON.parse(<string>req.query.query);
         assertSigReq(params);
@@ -100,7 +98,7 @@ router.get(
                 contracts.CCAuthTx.address
             )
         );
-        res.status(200).json(<SigRes>{
+        res.status(200).json({
             tokenIds: ids,
             amounts: amts,
             nonce: claimRes.nonce,
@@ -110,6 +108,14 @@ router.get(
         });
     })
 );
+/* 
+router.post('/auth', jsonParser, asyncHandler(async (req, res) => {
+  const {body} = req;
+  assertAuthReq(body);
+  const result = await client.postNewAuths(body);
+  res.status(200).send(result);
+}))
+ */
 /*
 let currentSupply: number;
 const checkSupply = async () => {

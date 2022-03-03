@@ -3,13 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable no-unused-vars */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/extensions */
+const dotenv = require("dotenv");
 const express = require("express");
 const createError = require("http-errors");
 const index_1 = require("./routes/index");
+dotenv.config();
 const app = express();
 app.use('/', index_1.default);
-app.use('/claims', index_1.default);
+// app.use('/claims', indexRouter);
 app.use('/signature', index_1.default);
+// app.use('/authFuncs', indexRouter);
 // app.use("/waves/:waveId/:tokenId", indexRouter);
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

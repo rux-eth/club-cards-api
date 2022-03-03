@@ -1,8 +1,13 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/extensions */
-import { ethers, Signer } from 'ethers';
+import { BigNumber, ethers, Signer } from 'ethers';
 import { arrayify } from 'ethers/lib/utils';
-import { ClaimSigParams, MintSigParams, SigResponse } from './types';
+import {
+    AuthReq, ClaimSigParams,
+    MintSigParams,
+    SigResponse
+} from './types';
 
 export default function createSig(
     senderAddy: string,
@@ -73,4 +78,27 @@ export default function createSig(
             });
     });
 }
+
+export function recPostSig(auth: AuthReq): string {
+    const nonce: BigNumber = BigNumber.from(auth.content.postNonce);
+    const newAuth: string = JSON.stringify(auth.content);
+    const message = ethers.utils.defaultAbiCoder.encode(
+        ['uint256', 'string'],
+        [nonce, newAuth]
+    );
+    const hashed = ethers.utils.keccak256(message);
+    return ethers.utils.recoverAddress(arrayify(ethers.utils.hashMessage(arrayify(hashed))), auth.signature);
+}
+/* 
+export async function postSig(auth: AuthReq, signer: Signer): Promise<string> {
+    const nonce: BigNumber = BigNumber.from(auth.content.postNonce);
+    const newAuth: string = JSON.stringify(auth.content);
+    const message = ethers.utils.defaultAbiCoder.encode(
+        ['uint256', 'string'],
+        [nonce, newAuth]
+    );
+    const hashed = ethers.utils.keccak256(message);
+    return signer.signMessage(arrayify(hashed))
+}
+ */
 export { ClaimSigParams, MintSigParams, SigResponse };
