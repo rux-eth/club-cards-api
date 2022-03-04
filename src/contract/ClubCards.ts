@@ -18,7 +18,7 @@ if (!(process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'production'))
     throw Error('No NODE_ENV Specified. Configure in environment variables');
 }
 const node: Provider = new ethers.providers.InfuraProvider('mainnet', process.env.INFURA_ID);
-const admin: Signer = new ethers.Wallet(process.env.PRIVATE_KEY_ADMIN, node);
+export const admin: Signer = new ethers.Wallet(process.env.PRIVATE_KEY_ADMIN, node);
 const conData: { cc: { address: string; abi: any }; ccat: { address: string; abi: any } } = {
     cc: { address: cc_m.address, abi: cc_m.abi },
     ccat: { address: ccat_m.address, abi: ccat_m.abi },
