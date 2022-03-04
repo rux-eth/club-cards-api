@@ -23,7 +23,12 @@ const node: Provider = new ethers.providers.InfuraProvider(
     process.env.NODE_ENV === 'production' ? 'mainnet' : 'rinkeby',
     process.env.INFURA_ID
 );
-const admin: Signer = new ethers.Wallet(process.env.PRIVATE_KEY_ADMIN, node);
+const admin: Signer = new ethers.Wallet(
+    process.env.NODE_ENV === 'production'
+        ? process.env.PRIVATE_KEY_ADMIN
+        : process.env.PRIVATE_KEY_ADMIN_TEST,
+    node
+);
 const conData: { cc: { address: string; abi: any }; ccat: { address: string; abi: any } } =
     process.env.NODE_ENV === 'production'
         ? {
