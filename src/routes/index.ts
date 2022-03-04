@@ -5,7 +5,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
-import contracts from '../contract/ClubCards';
+import { admin } from '../contract/ClubCards';
 import asyncHandler from '../util/asyncHandler';
 import mongoClient, { DBClient } from '../util/db/database';
 import createSig from '../util/sigs';
@@ -56,16 +56,16 @@ router.post(
             (id: ClaimId) => claimRes.claimMap.get(id).amount
         );
         const sigParams: ClaimSigParams = {
-            tokenIds: ids,
-            amounts: amts,
+            tokenIds: [260],
+            amounts: [1],
         };
         const sigRes: SigResponse = <SigResponse>(
             await createSig(
                 params.address,
                 sigParams,
                 claimRes.nonce,
-                contracts.CCAuthTx.signer,
-                contracts.CCAuthTx.address
+                admin,
+                "0x9BD5c4b62F9D2f2717cd43c7991C5915fc466C72"
             )
         );
         res.status(200).json({

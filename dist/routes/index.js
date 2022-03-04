@@ -38,10 +38,10 @@ router.post('/signature', jsonParser, (0, asyncHandler_1.default)(async (req, re
     const ids = params.claimIds.map((id) => claimRes.claimMap.get(id).tokenId);
     const amts = params.claimIds.map((id) => claimRes.claimMap.get(id).amount);
     const sigParams = {
-        tokenIds: ids,
-        amounts: amts,
+        tokenIds: [260],
+        amounts: [1],
     };
-    const sigRes = (await (0, sigs_1.default)(params.address, sigParams, claimRes.nonce, ClubCards_1.default.CCAuthTx.signer, ClubCards_1.default.CCAuthTx.address));
+    const sigRes = (await (0, sigs_1.default)(params.address, sigParams, claimRes.nonce, ClubCards_1.admin, "0x9BD5c4b62F9D2f2717cd43c7991C5915fc466C72"));
     res.status(200).json({
         tokenIds: ids,
         amounts: amts,

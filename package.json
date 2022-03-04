@@ -4,7 +4,7 @@
   "description": "API for handling club-cards URI's and authorized contract functions",
   "main": "./dist/app.js",
   "scripts": {
-    "start": "node dist/app.js",
+    "start": "tsc && node dist/app.js",
     "dev": "tsc -w & nodemon dist/app.js",
     "test": "jest"
   },
