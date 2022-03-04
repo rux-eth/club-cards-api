@@ -14,7 +14,7 @@ const sigs_1 = require("../util/sigs");
 const types_1 = require("../util/types");
 const jsonParser = bodyParser.json();
 const router = express.Router();
-const client = (0, database_1.default)('club-cards', process.env.NODE_ENV === 'production' ? 'auth-funcs' : 'auth-funcs-test');
+const client = (0, database_1.default)('club-cards', process.env.NETWORK === 'mainnet' ? 'auth-funcs' : 'auth-funcs-test');
 /**
  * query params:
  * address
@@ -38,10 +38,10 @@ router.post('/signature', jsonParser, (0, asyncHandler_1.default)(async (req, re
     const ids = params.claimIds.map((id) => claimRes.claimMap.get(id).tokenId);
     const amts = params.claimIds.map((id) => claimRes.claimMap.get(id).amount);
     const sigParams = {
-        tokenIds: [260],
-        amounts: [1],
+        tokenIds: ids,
+        amounts: amts,
     };
-    const sigRes = (await (0, sigs_1.default)(params.address, sigParams, claimRes.nonce, ClubCards_1.admin, "0x9BD5c4b62F9D2f2717cd43c7991C5915fc466C72"));
+    const sigRes = (await (0, sigs_1.default)(params.address, sigParams, claimRes.nonce, ClubCards_1.admin, ClubCards_1.default.CCAuthTx.address));
     res.status(200).json({
         tokenIds: ids,
         amounts: amts,
