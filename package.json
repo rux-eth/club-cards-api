@@ -1,6 +1,6 @@
 {
   "name": "club-cards-api",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "API for handling club-cards URI's and authorized contract functions",
   "main": "./dist/app.js",
   "scripts": {
